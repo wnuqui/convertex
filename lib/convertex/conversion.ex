@@ -10,6 +10,7 @@ defmodule Convertex.Conversion do
     field :amount, :integer
     field :base, :string
     field :target, :string
+    field :conversion_text, :string
 
     timestamps()
   end
