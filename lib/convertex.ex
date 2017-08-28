@@ -9,6 +9,8 @@ defmodule Convertex do
 
   import Meeseeks.XPath
 
+  alias Convertex.{Repo, Conversion}
+
   @url "https://www.google.com/search?q=BASE+AMOUNT+to+TARGET"
 
   def convert(options) do
@@ -25,7 +27,7 @@ defmodule Convertex do
     result = results |> hd()
     tree = Meeseeks.tree result
 
-    tree
+    data = tree
     |> elem(2)
     |> Enum.at(0)
     |> elem(2)
@@ -38,5 +40,15 @@ defmodule Convertex do
     |> Enum.at(0)
     |> elem(2)
     |> Enum.at(0)
+
+    changeset = Conversion.changeset(%Conversion{}, %{base: options["base"], amount: amount, target: options["target"]})
+
+    case Repo.insert(changeset) do
+      {:ok, conversion} ->
+        data
+      {:error, changeset} ->
+        IO.puts changeset
+        "Conversion error"
+    end
   end
 end
