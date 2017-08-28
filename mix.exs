@@ -42,7 +42,8 @@ defmodule Convertex.Mixfile do
       {:cowboy, "~> 1.0"},
       {:httpoison, "~> 0.13"},
       {:meeseeks, "~> 0.7.2"},
-      {:exvcr, "~> 0.8", only: :test}
+      {:exvcr, "~> 0.8", only: :test},
+      {:timex, "~> 3.1"}
     ]
   end
 
