@@ -15,6 +15,6 @@ fi
 
 curl -s -X "POST" "http://localhost:4000/api/conversions" \
 	-H "Content-Type: application/json" \
-	-d "{\"base\":\"USD\",\"amount\":\"1\",\"target\":\"PHP\"}"
+	-d "{\"base\":\"$1\",\"amount\":\"1\",\"target\":\"$2\"}"
 
 echo
