@@ -1,6 +1,9 @@
 defmodule ConvertexWeb.ConversionControllerTest do
   use ConvertexWeb.ConnCase, vcr: true
 
+  import Ecto
+  import Ecto.{Changeset, Query}
+
   @conversion %{"conversion" => "1 US dollar = 51.0450 Philippine pesos"}
 
   describe "POST /api/conversions" do
@@ -16,6 +19,17 @@ defmodule ConvertexWeb.ConversionControllerTest do
         conn = post conn, "/api/conversions", base: "USD", target: "PHP"
         assert json_response(conn, 200)["data"] == @conversion
       end
+    end
+
+    test "creates a conversion if no conversion for the last 60 seconds", %{conn: conn} do
+      count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+
+      conn = post conn, "/api/conversions", base: "USD", target: "PHP"
+      assert json_response(conn, 200)["data"] == @conversion
+
+      updated_count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+
+      assert count + 1 == updated_count
     end
   end
 end
