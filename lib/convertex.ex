@@ -7,7 +7,7 @@ defmodule Convertex do
   if it comes from the database, an external API or others.
   """
 
-  import Meeseeks.XPath
+  import Meeseeks.{CSS, XPath}
 
   alias Convertex.{Repo, Conversion}
 
@@ -23,31 +23,20 @@ defmodule Convertex do
 
     html = HTTPoison.get!(url).body
 
-    results = Meeseeks.all(html, xpath("//*[@id=\"ires\"]/ol/table"))
-    result = results |> hd()
-    tree = Meeseeks.tree result
+    data = html
+    |> Meeseeks.all(xpath("//*[@id=\"ires\"]/ol/table"))
+    |> hd()
+    |> Meeseeks.all(css("b"))
+    |> hd()
+    |> Meeseeks.text()
 
-    data = tree
-    |> elem(2)
-    |> Enum.at(0)
-    |> elem(2)
-    |> Enum.at(0)
-    |> elem(2)
-    |> Enum.at(2)
-    |> elem(2)
-    |> Enum.at(0)
-    |> elem(2)
-    |> Enum.at(0)
-    |> elem(2)
-    |> Enum.at(0)
-
-    changeset = Conversion.changeset(%Conversion{}, %{base: options["base"], amount: amount, target: options["target"]})
+    attrs = %{base: options["base"], amount: amount, target: options["target"]}
+    changeset = Conversion.changeset(%Conversion{}, attrs)
 
     case Repo.insert(changeset) do
-      {:ok, conversion} ->
+      {:ok, _} ->
         data
-      {:error, changeset} ->
-        IO.puts changeset
+      {:error, _} ->
         "Conversion error"
     end
   end
