@@ -44,7 +44,8 @@ defmodule Convertex.Mixfile do
       {:meeseeks, "~> 0.7.2"},
       {:exvcr, "~> 0.8", only: :test},
       {:timex, "~> 3.1"},
-      {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
+      {:credo, "~> 0.8", only: [:dev, :test], runtime: false},
+      {:ex_unit_notifier, "~> 0.1", only: :test}
     ]
   end
 
