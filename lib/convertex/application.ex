@@ -1,5 +1,7 @@
-defmodule Convertex.Application do
+defmodule Convertex.Application do @moduledoc false
   use Application
+
+  alias ConvertexWeb.{Endpoint}
 
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
@@ -11,9 +13,10 @@ defmodule Convertex.Application do
       # Start the Ecto repository
       supervisor(Convertex.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(ConvertexWeb.Endpoint, []),
-      # Start your own worker by calling: Convertex.Worker.start_link(arg1, arg2, arg3)
-      # worker(Convertex.Worker, [arg1, arg2, arg3]),
+      supervisor(Endpoint, []),
+      # Start your own worker by calling:
+      #   Convertex.Worker.start_link(arg1, arg2, arg3)
+      #   worker(Convertex.Worker, [arg1, arg2, arg3]),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -25,7 +28,7 @@ defmodule Convertex.Application do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    ConvertexWeb.Endpoint.config_change(changed, removed)
+    Endpoint.config_change(changed, removed)
     :ok
   end
 end

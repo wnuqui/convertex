@@ -43,7 +43,8 @@ defmodule Convertex.Mixfile do
       {:httpoison, "~> 0.13"},
       {:meeseeks, "~> 0.7.2"},
       {:exvcr, "~> 0.8", only: :test},
-      {:timex, "~> 3.1"}
+      {:timex, "~> 3.1"},
+      {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
   end
 
