@@ -1,4 +1,4 @@
-# convertex
+# convertex [![Build Status](https://travis-ci.org/wnuqui/convertex.png?branch=master)](https://travis-ci.org/wnuqui/convertex)
 
 A simple Phoenix JSON API application that converts currency. This is a direct port of [konverter](https://github.com/wnuqui/konverter), a Rails application.
 

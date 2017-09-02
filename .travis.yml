@@ -1,0 +1,29 @@
+language: elixir
+elixir:
+  - 1.4.0
+otp_release:
+  - 19.1
+  - 19.2
+  - 19.3
+sudo: required
+dist: trusty
+cache: apt
+env:
+  matrix:
+    - MIX_ENV=test
+services:
+  - postgresql
+before_install:
+  - curl https://sh.rustup.rs | sh -s -- -y
+  - export PATH="$HOME/.cargo/bin:$PATH"
+before_script:
+  - psql -c 'create database convertex_test;' -U postgres
+install:
+  - mix local.hex --force
+  - mix local.rebar --force
+  - mix deps.get
+script:
+  - mix ecto.reset && mix test --trace
+notifications:
+  recipients:
+    - nuqui.dev@gmail.com
