@@ -29,5 +29,33 @@ defmodule ConvertexWeb.ConversionControllerTest do
         assert count + 1 == updated_count
       end
     end
+
+    test "does not create a conversion if a conversion is persited for the last 60 seconds", %{conn: conn} do
+      use_cassette "conversions/post" do
+        post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
+        count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+
+        :timer.sleep((Convertex.ago_sec() - 1) * 1000)
+
+        post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
+        updated_count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+
+        assert count == updated_count
+      end
+    end
+
+    test "creates a conversion if last conversion is persited for more than 60 seconds already", %{conn: conn} do
+      use_cassette "conversions/post" do
+        post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
+        count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+
+        :timer.sleep((Convertex.ago_sec() + 1) * 1000)
+
+        post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
+        updated_count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+
+        assert count + 1 == updated_count
+      end
+    end
   end
 end

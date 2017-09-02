@@ -18,7 +18,7 @@ defmodule Convertex.Conversion do
   @doc false
   def changeset(%Conversion{} = conversion, attrs) do
     conversion
-    |> cast(attrs, [:amount, :base, :target])
-    |> validate_required([:amount, :base, :target])
+    |> cast(attrs, [:amount, :base, :target, :conversion_text])
+    |> validate_required([:amount, :base, :target, :conversion_text])
   end
 end
