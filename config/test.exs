@@ -16,4 +16,5 @@ config :convertex, Convertex.Repo,
   password: "postgres",
   database: "convertex_test",
   hostname: "localhost",
+  ownership_timeout: 70_000,
   pool: Ecto.Adapters.SQL.Sandbox
