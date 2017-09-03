@@ -6,7 +6,12 @@
   "skip_files": [
     "test",
     "lib/convertex_web/channels/user_socket.ex",
-    "lib/convertex_web/gettext.ex"
+    "lib/convertex_web/gettext.ex",
+    "lib/convertex_web.ex",
+    "lib/convertex_web/views/error_helpers.ex",
+    "lib/convertex_web/endpoint.ex",
+    "lib/convertex/application.ex",
+    "lib/convertex/repo.ex"
   ],
 
   "coverage_options": {
