@@ -4,6 +4,7 @@ defmodule Convertex.Mixfile do
   def project do
     [
       app: :convertex,
+      app: :excoveralls,
       version: "0.0.1",
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
@@ -11,7 +12,8 @@ defmodule Convertex.Mixfile do
       start_permanent: Mix.env == :prod,
       aliases: aliases(),
       deps: deps(),
-      preferred_cli_env: [vcr: :test]
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [vcr: :test, coveralls: :test]
     ]
   end
 
@@ -43,7 +45,10 @@ defmodule Convertex.Mixfile do
       {:httpoison, "~> 0.13"},
       {:meeseeks, "~> 0.7.2"},
       {:exvcr, "~> 0.8", only: :test},
-      {:timex, "~> 3.1"}
+      {:timex, "~> 3.1"},
+      {:credo, "~> 0.8", only: [:dev, :test], runtime: false},
+      {:ex_unit_notifier, "~> 0.1", only: :test},
+      {:excoveralls, "~> 0.7", only: :test}
     ]
   end
 
