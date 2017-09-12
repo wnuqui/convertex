@@ -15,56 +15,62 @@ defmodule Convertex do
   @ago_sec 60
 
   def convert(options) do
-    amount = Map.get(options, "amount", "1")
+    cached_conversion = fetch_cached_conversion(options)
 
+    if is_nil(cached_conversion) do
+      case convert_and_cache(options) do
+        {:ok, conversion} ->
+          conversion.conversion_text
+        {:error, _} ->
+          "Conversion error"
+      end
+    else
+      cached_conversion.conversion_text
+    end
+  end
+
+  def fetch_cached_conversion(options) do
+    ago = Timex.now() |> Timex.shift(seconds: -ago_sec())
+
+    query = from c in Conversion,
+      where: \
+      c.base == ^options["base"] and \
+      c.amount == ^options["amount"] and \
+      c.target == ^options["target"] and \
+      c.inserted_at > ^ago
+
+    Repo.one(query)
+  end
+
+  def convert_via_google(options) do
     url = @url
     |> String.replace("BASE", options["base"])
-    |> String.replace("AMOUNT", amount)
+    |> String.replace("AMOUNT", options["amount"])
     |> String.replace("TARGET", options["target"])
 
     html = HTTPoison.get!(url).body
 
-    data = html
+    html
     |> Meeseeks.all(xpath("//*[@id=\"ires\"]/ol/table"))
     |> hd()
     |> Meeseeks.all(css("b"))
     |> hd()
     |> Meeseeks.text()
+  end
+
+  def convert_and_cache(options) do
+    data = convert_via_google(options)
 
     attrs = %{
       base: options["base"],
-      amount: amount,
+      amount: options["amount"],
       target: options["target"],
       conversion_text: data
     }
 
     changeset = Conversion.changeset(%Conversion{}, attrs)
 
-    conversion = fetch_cached_conversion(attrs)
-
-    if is_nil(conversion) do
-      case Repo.insert(changeset) do
-        {:ok, _} ->
-          data
-        {:error, _} ->
-          "Conversion error"
-      end
-    else
-      conversion.conversion_text
-    end
-  end
-
-  def fetch_cached_conversion(attrs) do
-    ago = Timex.now() |> Timex.shift(seconds: -ago_sec())
-
-    query = from c in Conversion,
-      where: \
-      c.base == ^attrs[:base] and \
-      c.amount == ^attrs[:amount] and \
-      c.target == ^attrs[:target] and \
-      c.inserted_at > ^ago
-
-    Repo.one(query)
+    Repo.insert changeset
   end
 
   def ago_sec, do: @ago_sec
