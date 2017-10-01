@@ -14,21 +14,6 @@ defmodule Convertex do
   @url "https://www.google.com/search?q=BASE+AMOUNT+to+TARGET"
   @ago_sec 60
 
-  def convert(options) do
-    cached_conversion = fetch_cached_conversion(options)
-
-    if is_nil(cached_conversion) do
-      case convert_and_cache(options) do
-        {:ok, conversion} ->
-          conversion.conversion_text
-        {:error, _} ->
-          "Conversion error"
-      end
-    else
-      cached_conversion.conversion_text
-    end
-  end
-
   def fetch_cached_conversion(options) do
     ago = Timex.shift(Timex.now(), seconds: -ago_sec())
 
@@ -40,22 +25,6 @@ defmodule Convertex do
       c.inserted_at > ^ago
 
     Repo.one(query)
-  end
-
-  def convert_via_google(options) do
-    url = @url
-    |> String.replace("BASE", options["base"])
-    |> String.replace("AMOUNT", options["amount"])
-    |> String.replace("TARGET", options["target"])
-
-    html = HTTPoison.get!(url).body
-
-    html
-    |> Meeseeks.all(xpath("//*[@id=\"ires\"]/ol/table"))
-    |> hd()
-    |> Meeseeks.all(css("b"))
-    |> hd()
-    |> Meeseeks.text()
   end
 
   def convert_and_cache(options) do
@@ -73,5 +42,31 @@ defmodule Convertex do
     Repo.insert changeset
   end
 
+  def conversion_options(params) do
+    amount = Map.get(params, "amount", "1")
+
+    %{
+      "base" => params["base"],
+      "amount" => amount,
+      "target" => params["target"]
+    }
+  end
+
   def ago_sec, do: @ago_sec
+
+  defp convert_via_google(options) do
+    url = @url
+    |> String.replace("BASE", options["base"])
+    |> String.replace("AMOUNT", options["amount"])
+    |> String.replace("TARGET", options["target"])
+
+    html = HTTPoison.get!(url).body
+
+    html
+    |> Meeseeks.all(xpath("//*[@id=\"ires\"]/ol/table"))
+    |> hd()
+    |> Meeseeks.all(css("b"))
+    |> hd()
+    |> Meeseeks.text()
+  end
 end

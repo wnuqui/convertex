@@ -44,9 +44,9 @@ defmodule ConvertexWeb.ConversionControllerTest do
 
     test "creates a conversion if no conversion for the last 60 seconds", %{conn: conn} do
       use_cassette "conversions/post" do
-        count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+        count = conversion_count()
         post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
-        updated_count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+        updated_count = conversion_count()
 
         assert count + 1 == updated_count
       end
@@ -58,7 +58,7 @@ defmodule ConvertexWeb.ConversionControllerTest do
         count = conversion_count()
 
         post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
-        updated_count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+        updated_count = conversion_count()
 
         assert count == updated_count
       end
@@ -70,7 +70,7 @@ defmodule ConvertexWeb.ConversionControllerTest do
         count = conversion_count()
 
         post conn, "/api/conversions", base: "USD", amount: "1", target: "PHP"
-        updated_count = Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
+        updated_count = conversion_count()
 
         assert count + 1 == updated_count
       end
