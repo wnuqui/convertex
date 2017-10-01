@@ -30,7 +30,7 @@ defmodule Convertex do
   end
 
   def fetch_cached_conversion(options) do
-    ago = Timex.now() |> Timex.shift(seconds: -ago_sec())
+    ago = Timex.shift(Timex.now(), seconds: -ago_sec())
 
     query = from c in Conversion,
       where: \
