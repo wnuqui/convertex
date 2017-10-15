@@ -14,4 +14,8 @@ defmodule ConvertexWeb.ConversionView do
     end)
     %{errors: errors}
   end
+
+  def render("failed_google_conversion.json", %{errors: errors}) do
+    %{errors: errors}
+  end
 end

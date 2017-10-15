@@ -17,7 +17,7 @@ defmodule ConvertexWeb.ConversionController do
           {:error, _} ->
             conn
             |> put_status(422)
-            |> render("422.json", %{errors: "conversion error"})
+            |> render("failed_google_conversion.json", %{errors: "conversion error"})
         end
       else
         render conn, "conversion.json", %{conversion: cached_conversion.conversion_text}
