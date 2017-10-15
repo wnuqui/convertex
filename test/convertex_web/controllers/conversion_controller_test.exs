@@ -3,6 +3,8 @@ defmodule ConvertexWeb.ConversionControllerTest do
 
   import Ecto.Query
 
+  import Mock
+
   alias Convertex.{Repo, Conversion}
 
   @conversion %{"conversion" => "1 US dollar = 51.0450 Philippine pesos"}
@@ -12,10 +14,10 @@ defmodule ConvertexWeb.ConversionControllerTest do
     |> DateTime.to_naive
 
     attrs = %{
-      base: "USD",
-      amount: "1",
-      target: "PHP",
-      conversion_text: "1 US dollar = 51.0450 Philippine pesos"
+      "base" => "USD",
+      "amount" => "1",
+      "target" => "PHP",
+      "conversion_text" => "1 US dollar = 51.0450 Philippine pesos"
     }
 
     changeset = Conversion.changeset(%Conversion{inserted_at: naive_datetime, updated_at: naive_datetime}, attrs)
@@ -73,6 +75,25 @@ defmodule ConvertexWeb.ConversionControllerTest do
         updated_count = conversion_count()
 
         assert count + 1 == updated_count
+      end
+    end
+
+    test "fails to create a conversion as base and target are missing", %{conn: conn} do
+      conn = post conn, "/api/conversions"
+
+      errors = %{"base" => ["can't be blank"], "target" => ["can't be blank"]}
+      assert json_response(conn, 422)["errors"] == errors
+    end
+
+    test "fails to create a conversion since base is not a valid currency", %{conn: conn} do
+      mocked = [
+        fetch_cached_conversion: fn(_) -> nil end,
+        convert_and_cache: fn(_) -> {:error, "conversion error"} end
+      ]
+
+      with_mock Convertex, mocked do
+        conn = post conn, "/api/conversions", base: "USA", amount: "1", target: "PHP"
+        assert json_response(conn, 422)["errors"] == "conversion error"
       end
     end
   end

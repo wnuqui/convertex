@@ -17,8 +17,17 @@ defmodule Convertex.Conversion do @moduledoc false
 
   @doc false
   def changeset(%Conversion{} = conversion, attrs) do
+    amount = Map.get(attrs, "amount")
+
+    attrs =
+      if is_nil(amount) do
+        Map.put(attrs, "amount", "1")
+      else
+        attrs
+      end
+
     conversion
-    |> cast(attrs, [:amount, :base, :target, :conversion_text])
-    |> validate_required([:amount, :base, :target, :conversion_text])
+    |> cast(attrs, [:amount, :base, :target])
+    |> validate_required([:amount, :base, :target])
   end
 end

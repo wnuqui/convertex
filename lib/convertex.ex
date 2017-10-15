@@ -9,6 +9,7 @@ defmodule Convertex do
 
   import Meeseeks.{CSS, XPath}
   import Ecto.Query, only: [from: 2]
+  import Ecto.Changeset
   alias Convertex.{Repo, Conversion}
 
   @url "https://www.google.com/search?q=BASE+AMOUNT+to+TARGET"
@@ -19,54 +20,39 @@ defmodule Convertex do
 
     query = from c in Conversion,
       where: \
-      c.base == ^options["base"] and \
-      c.amount == ^options["amount"] and \
-      c.target == ^options["target"] and \
+      c.base == ^options[:base] and \
+      c.amount == ^options[:amount] and \
+      c.target == ^options[:target] and \
       c.inserted_at > ^ago
 
     Repo.one(query)
   end
 
-  def convert_and_cache(options) do
-    data = convert_via_google(options)
-
-    attrs = %{
-      base: options["base"],
-      amount: options["amount"],
-      target: options["target"],
-      conversion_text: data
-    }
-
-    changeset = Conversion.changeset(%Conversion{}, attrs)
-
+  def convert_and_cache(changeset) do
+    conversion_text = convert_via_google(changeset.changes)
+    changeset = changeset |> put_change(:conversion_text, conversion_text)
     Repo.insert changeset
-  end
-
-  def conversion_options(params) do
-    amount = Map.get(params, "amount", "1")
-
-    %{
-      "base" => params["base"],
-      "amount" => amount,
-      "target" => params["target"]
-    }
   end
 
   def ago_sec, do: @ago_sec
 
-  defp convert_via_google(options) do
+  def convert_via_google(options) do
     url = @url
-    |> String.replace("BASE", options["base"])
-    |> String.replace("AMOUNT", options["amount"])
-    |> String.replace("TARGET", options["target"])
+    |> String.replace("BASE", options[:base])
+    |> String.replace("AMOUNT", to_string(options[:amount]))
+    |> String.replace("TARGET", options[:target])
 
     html = HTTPoison.get!(url).body
+    html = Meeseeks.all(html, xpath("//*[@id=\"ires\"]/ol/table"))
 
-    html
-    |> Meeseeks.all(xpath("//*[@id=\"ires\"]/ol/table"))
-    |> hd()
-    |> Meeseeks.all(css("b"))
-    |> hd()
-    |> Meeseeks.text()
+    case html do
+      {:error, _} -> nil
+      html ->
+        html
+        |> hd()
+        |> Meeseeks.all(css("b"))
+        |> hd()
+        |> Meeseeks.text()
+    end
   end
 end
