@@ -12,10 +12,10 @@ defmodule ConvertexWeb.ConversionControllerTest do
     |> DateTime.to_naive
 
     attrs = %{
-      base: "USD",
-      amount: "1",
-      target: "PHP",
-      conversion_text: "1 US dollar = 51.0450 Philippine pesos"
+      "base" => "USD",
+      "amount" => "1",
+      "target" => "PHP",
+      "conversion_text" => "1 US dollar = 51.0450 Philippine pesos"
     }
 
     changeset = Conversion.changeset(%Conversion{inserted_at: naive_datetime, updated_at: naive_datetime}, attrs)
@@ -74,6 +74,13 @@ defmodule ConvertexWeb.ConversionControllerTest do
 
         assert count + 1 == updated_count
       end
+    end
+
+    test "fails to create a conversion as base and target are missing", %{conn: conn} do
+      conn = post conn, "/api/conversions"
+
+      errors = %{"base" => ["can't be blank"], "target" => ["can't be blank"]}
+      assert json_response(conn, 422)["errors"] == errors
     end
   end
 end
