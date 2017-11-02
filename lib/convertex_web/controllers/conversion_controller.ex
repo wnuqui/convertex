@@ -1,17 +1,16 @@
 defmodule ConvertexWeb.ConversionController do
   use ConvertexWeb, :controller
-  import Convertex, only: [fetch_cached_conversion: 1, convert_and_cache: 1]
-
-  alias Convertex.Conversion
 
   def create(conn, params) do
-    changeset = Conversion.changeset(%Conversion{}, params)
+    changeset = Convertex.conversion_changeset(params)
 
     if changeset.valid? do
-      cached_conversion = fetch_cached_conversion(changeset.changes)
+      cached_conversion = Convertex.fetch_cached_conversion(changeset.changes)
 
-      if is_nil(cached_conversion) do
-        case convert_and_cache(changeset) do
+      if cached_conversion != nil do
+        render conn, "conversion.json", %{conversion: cached_conversion.conversion_text}
+      else
+        case Convertex.convert_and_cache(changeset) do
           {:ok, conversion} ->
             render conn, "conversion.json", %{conversion: conversion.conversion_text}
           {:error, _} ->
@@ -19,8 +18,6 @@ defmodule ConvertexWeb.ConversionController do
             |> put_status(422)
             |> render("failed_google_conversion.json", %{errors: "conversion error"})
         end
-      else
-        render conn, "conversion.json", %{conversion: cached_conversion.conversion_text}
       end
     else
       conn

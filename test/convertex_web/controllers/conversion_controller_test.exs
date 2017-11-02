@@ -25,6 +25,16 @@ defmodule ConvertexWeb.ConversionControllerTest do
     Repo.insert! changeset
   end
 
+  def invalid_conversion_changeset() do
+    invalid_attrs = %{
+      "base" => "INV",
+      "amount" => "1",
+      "target" => "PHP"
+    }
+
+    Conversion.changeset(%Conversion{}, invalid_attrs)
+  end
+
   def conversion_count do
     Convertex.Repo.one(from c in Convertex.Conversion, select: count(c.id))
   end
@@ -85,14 +95,16 @@ defmodule ConvertexWeb.ConversionControllerTest do
       assert json_response(conn, 422)["errors"] == errors
     end
 
+    # TODO: Better way of doing test for this.
     test "fails to create a conversion since base is not a valid currency", %{conn: conn} do
       mocked = [
+        conversion_changeset: fn(_) -> invalid_conversion_changeset() end,
         fetch_cached_conversion: fn(_) -> nil end,
         convert_and_cache: fn(_) -> {:error, "conversion error"} end
       ]
 
       with_mock Convertex, mocked do
-        conn = post conn, "/api/conversions", base: "USA", amount: "1", target: "PHP"
+        conn = post conn, "/api/conversions"
         assert json_response(conn, 422)["errors"] == "conversion error"
       end
     end
