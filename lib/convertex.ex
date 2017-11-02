@@ -10,10 +10,24 @@ defmodule Convertex do
   import Meeseeks.{CSS, XPath}
   import Ecto.Query, only: [from: 2]
   import Ecto.Changeset
+
   alias Convertex.{Repo, Conversion}
 
   @url "https://www.google.com/search?q=BASE+AMOUNT+to+TARGET"
   @ago_sec 60
+
+  def conversion_changeset(params) do
+    amount = Map.get(params, "amount")
+
+    attrs =
+      if is_nil(amount) do
+        Map.put(params, "amount", "1")
+      else
+        params
+      end
+
+    Conversion.changeset(%Conversion{}, attrs)
+  end
 
   def fetch_cached_conversion(options) do
     ago = Timex.shift(Timex.now(), seconds: -ago_sec())
